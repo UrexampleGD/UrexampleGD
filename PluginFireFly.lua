@@ -1,4 +1,4 @@
--- Plugin in Tested
+-- JIGGA
 
 local _s = odh_shared_plugins
 if not _s and getgenv then
@@ -54,14 +54,14 @@ pcall(function()
 end)
 
 pcall(function()
-	_t2:AddToggle("Move Cooldown Window", function(b)
+	_t2:AddToggle("Move GUI Window", function(b)
 		_ui.d2 = b and true or false
 		if _ui.ready then _exec(_ui.move, _ui.d2) end
 	end)
 end)
 
 pcall(function()
-	_t2:AddToggle("Save Cooldown Position", function(b)
+	_t2:AddToggle("Save GUI Position", function(b)
 		if b and _ui.ready then _exec(_ui.save) end
 	end)
 end)
@@ -105,7 +105,7 @@ local function _init()
 	local _c1, _c2 = 0, 0
 	local _cn, _hk = {}, {}
 	local _st = 0
-	local _g, _l1, _l2
+	local _g, _mf, _l1, _l2
 
 	local _sp = nil
 
@@ -185,14 +185,14 @@ local function _init()
 		return _l
 	end
 
-	local function _sd(_l)
+	local function _sd(_obj)
 		local _dr, _ds, _sps = false, nil, nil
-		_l.InputBegan:Connect(function(_in)
+		_obj.InputBegan:Connect(function(_in)
 			if not _mv or not _curr() then return end
 			if _in.UserInputType == Enum.UserInputType.Touch or _in.UserInputType == Enum.UserInputType.MouseButton1 then
 				_dr = true
 				_ds = _in.Position
-				_sps = _l.Position
+				_sps = _obj.AbsolutePosition
 				_in.Changed:Connect(function()
 					if _in.UserInputState == Enum.UserInputState.End then _dr = false end
 				end)
@@ -202,7 +202,9 @@ local function _init()
 			if not _dr or not _mv or not _curr() then return end
 			if _in.UserInputType == Enum.UserInputType.Touch or _in.UserInputType == Enum.UserInputType.MouseMovement then
 				local _d = _in.Position - _ds
-				_l.Position = UDim2.new(_sps.X.Scale, _sps.X.Offset + _d.X, _sps.Y.Scale, _sps.Y.Offset + _d.Y)
+				local _na = _sps + Vector2.new(_d.X, _d.Y)
+				local _vp = workspace.CurrentCamera.ViewportSize
+				_obj.Position = UDim2.fromScale(_na.X / _vp.X, _na.Y / _vp.Y)
 			end
 		end)
 	end
@@ -215,10 +217,18 @@ local function _init()
 		_g.IgnoreGuiInset = true
 		_g.DisplayOrder = 999
 		_g.Parent = _pg
-		_l1 = _ml(_g, UDim2.new(0.5, -50, 0.4, 0), UDim2.fromOffset(100, 50), 32)
-		_l2 = _ml(_g, _sp or UDim2.new(0, 20, 0.5, 0), UDim2.fromOffset(110, 44), 26)
-		_l2.Active = false
-		_sd(_l2)
+		
+		_mf = Instance.new("Frame")
+		_mf.Name = "MainFrame"
+		_mf.Size = UDim2.fromOffset(160, 100)
+		_mf.Position = _sp or UDim2.new(0.5, -80, 0.5, -50)
+		_mf.BackgroundTransparency = 1
+		_mf.Active = true
+		_mf.Parent = _g
+		
+		_l1 = _ml(_mf, UDim2.new(0.5, -50, 0, 0), UDim2.fromOffset(100, 50), 32)
+		_l2 = _ml(_mf, UDim2.new(0.5, -55, 0, 50), UDim2.fromOffset(110, 44), 26)
+		_sd(_mf)
 	end
 
 	local function _hg()
@@ -369,18 +379,17 @@ local function _init()
 		if not _curr() then return end
 		_mv = b
 		_bg()
-		_l2.Active = b
 		if os.clock() >= _c2 then _hg() end
 	end
 
 	_ui.save = function()
 		if not _curr() then return end
 		_bg()
-		local _sz = _g.AbsoluteSize
-		if _sz.X <= 0 or _sz.Y <= 0 then return end
-		local _lpos = _l2.Position
-		local _x = math.clamp(_lpos.X.Scale + _lpos.X.Offset / _sz.X, 0, 0.95)
-		local _y = math.clamp(_lpos.Y.Scale + _lpos.Y.Offset / _sz.Y, 0, 0.95)
+		local _vp = workspace.CurrentCamera.ViewportSize
+		if _vp.X <= 0 or _vp.Y <= 0 then return end
+		local _pos = _mf.AbsolutePosition
+		local _x = math.clamp(_pos.X / _vp.X, 0, 0.95)
+		local _y = math.clamp(_pos.Y / _vp.Y, 0, 0.95)
 		_sp = UDim2.fromScale(_x, _y)
 		local _wr = false
 		pcall(function()
@@ -390,7 +399,7 @@ local function _init()
 			end
 		end)
 		if _wr then
-			_msg("Cooldown position saved")
+			_msg("GUI position saved")
 		else
 			_msg("Position kept for this session (executor can't save files)")
 		end
