@@ -1,4 +1,4 @@
--- JIGGA
+-- GIGGA MY JIGA
 
 local _s = odh_shared_plugins
 if not _s and getgenv then
@@ -180,6 +180,7 @@ local function _init()
 		_l.TextSize = _ts
 		_l.Text = ""
 		_l.Visible = false
+		_l.Active = false -- Disable text label input so it doesn't block the frame
 		_l.Parent = _p
 		pcall(function() Instance.new("UICorner", _l) end)
 		return _l
@@ -192,7 +193,7 @@ local function _init()
 			if _in.UserInputType == Enum.UserInputType.Touch or _in.UserInputType == Enum.UserInputType.MouseButton1 then
 				_dr = true
 				_ds = _in.Position
-				_sps = _obj.AbsolutePosition
+				_sps = _obj.Position
 				_in.Changed:Connect(function()
 					if _in.UserInputState == Enum.UserInputState.End then _dr = false end
 				end)
@@ -202,9 +203,7 @@ local function _init()
 			if not _dr or not _mv or not _curr() then return end
 			if _in.UserInputType == Enum.UserInputType.Touch or _in.UserInputType == Enum.UserInputType.MouseMovement then
 				local _d = _in.Position - _ds
-				local _na = _sps + Vector2.new(_d.X, _d.Y)
-				local _vp = workspace.CurrentCamera.ViewportSize
-				_obj.Position = UDim2.fromScale(_na.X / _vp.X, _na.Y / _vp.Y)
+				_obj.Position = UDim2.new(_sps.X.Scale, _sps.X.Offset + _d.X, _sps.Y.Scale, _sps.Y.Offset + _d.Y)
 			end
 		end)
 	end
@@ -214,7 +213,7 @@ local function _init()
 		_g = Instance.new("ScreenGui")
 		_g.Name = "FireflyLiteGui"
 		_g.ResetOnSpawn = false
-		_g.IgnoreGuiInset = true
+		_g.IgnoreGuiInset = false
 		_g.DisplayOrder = 999
 		_g.Parent = _pg
 		
