@@ -1,4 +1,4 @@
--- Test Message to know if updated
+-- TM
 
 local shared = odh_shared_plugins
 if not shared and getgenv then
@@ -70,7 +70,7 @@ end)
 
 pcall(function() my_own_section:AddLabel("Made by: SANGUINE 🤤🤤") end)
 
--- ===== Main Logic =====
+-- ===== Everything else, guarded; errors are shown on screen =====
 local function init()
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
@@ -79,8 +79,8 @@ local function init()
 	local LocalPlayer = Players.LocalPlayer
 	local pg = LocalPlayer:WaitForChild("PlayerGui")
 
-	local COUNTDOWN = 2.5             
-	local COOLDOWN = 9.3              -- Changed to 9.3 seconds
+	local COUNTDOWN = 2.5             -- Countdown before jumps
+	local COOLDOWN = 9.3              -- Cooldown timer
 	local FIRST_JUMP_REMAINING = 0.24 
 	local JUMP_GAP = 0.40             
 
@@ -99,14 +99,14 @@ local function init()
 	local moveMode = false
 	local autoGetEnabled = false
 	local hasCd = false        
-	local jumpDisabled = false 
+	local jumpDisabled = false -- Flag to block jumping
 	local token = 0
 	local cdStart, cdEnd = 0, 0
 	local conns, hooked = {}, {}
 	local scanToken = 0
 	local gui, countLabel, cdLabel
 
-	-- ===== Block Jumps =====
+	-- ===== Block Jumps when Countdown is Active =====
 	UserInputService.JumpRequest:Connect(function()
 		if jumpDisabled then
 			local char = LocalPlayer.Character
@@ -118,33 +118,29 @@ local function init()
 	end)
 
 	-- ===== Auto Get Firefly =====
-	local function autoGetLoop()
-		task.spawn(function()
-			while autoGetEnabled and isCurrent() do
-				local char = LocalPlayer.Character
-				local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
-				local hasTool = (char and char:FindFirstChild("Fireflies")) or (bp and bp:FindFirstChild("Fireflies"))
-				
-				if not hasTool then
-					pcall(function()
-						game:GetService("ReplicatedStorage").Remotes.Extras.ReplicateToy:InvokeServer("Fireflies")
-					end)
-				end
-				task.wait(1)
-			end
-		end)
-	end
-
 	impl.setAutoGet = function(bool)
 		if not isCurrent() then return end
 		autoGetEnabled = bool
 		if autoGetEnabled then
-			autoGetLoop()
+			task.spawn(function()
+				while autoGetEnabled and isCurrent() do
+					local char = LocalPlayer.Character
+					local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
+					local hasTool = (char and char:FindFirstChild("Fireflies")) or (bp and bp:FindFirstChild("Fireflies"))
+					
+					if not hasTool then
+						pcall(function()
+							game:GetService("ReplicatedStorage").Remotes.Extras.ReplicateToy:InvokeServer("Fireflies")
+						end)
+					end
+					task.wait(1)
+				end
+			end)
 		end
 	end
 
-	-- ===== Window Position =====
-	local savedPos = nil 
+	-- ===== Saved cooldown-window position =====
+	local savedPos = nil
 
 	local function loadPos()
 		pcall(function()
@@ -245,7 +241,7 @@ local function init()
 		local now = os.clock()
 		if now < cdEnd then return end
 
-		jumpDisabled = true -- Stop player from jumping
+		jumpDisabled = true -- Disable jumping on start
 
 		token = token + 1
 		local my = token
@@ -267,15 +263,18 @@ local function init()
 					j1 = true
 					fireJump()
 					task.delay(JUMP_GAP, function()
-						if enabled and isCurrent() and my == token then 
-							fireJump() 
-							jumpDisabled = false -- Re-enable jumping right after the 2nd jump
-						end
+						if enabled and isCurrent() and my == token then fireJump() end
 					end)
+				end
+
+				-- When countdown ends, re-enable jumping
+				if timeLeft <= 0 then
+					jumpDisabled = false
 				end
 
 				local t = os.clock()
 				local k = cdEnd - t
+				
 				if countLabel then
 					countLabel.Visible = timeLeft > 0
 					if timeLeft > 0 then countLabel.Text = string.format("%.1f", timeLeft) end
@@ -283,15 +282,12 @@ local function init()
 				if cdLabel then
 					if k > 0 then
 						cdLabel.Visible = true
-						cdLabel.Text = string.format("CD %.1f", k) 
+						cdLabel.Text = string.format("CD %.1f", k) -- Counts down from 9.3
 					end
 				end
-				if timeLeft <= 0 and k <= 0 then 
-					jumpDisabled = false -- Just in case
-					break 
-				end
+				if timeLeft <= 0 and k <= 0 then break end
 			end
-			if my == token then hideGui() end 
+			if my == token then hideGui() end
 		end)
 	end
 
