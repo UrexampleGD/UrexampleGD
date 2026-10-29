@@ -1,6 +1,12 @@
--- PIloter
+-- Test Message to know if updated
 
 local shared = odh_shared_plugins
+if not shared and getgenv then
+	local gv = getgenv()
+	if type(gv) == "table" and type(gv.shared) == "table" then
+		shared = gv.shared
+	end
+end
 
 if not shared or type(shared.CreateTab) ~= "function" then
 	warn("[Firefly Timer] Load through the current Overdrive H plugin menu.")
@@ -21,12 +27,12 @@ local function note(msg)
 	pcall(function() shared.Notify(msg, 4) end)
 end
 
--- ===== TOGGLES FIRST: nothing above can fail, so they always appear =====
+-- ===== TOGGLES FIRST =====
 local impl = {
 	ready = false,
-	desired = false,        -- Enable Firefly Timer
-	desiredMove = false,    -- Move Cooldown Window
-	desiredAutoGet = false, -- Auto Get Firefly
+	desired = false,
+	desiredMove = false,
+	desiredAutoGet = false,
 }
 
 local function safeCall(fn, ...)
@@ -64,7 +70,7 @@ end)
 
 pcall(function() my_own_section:AddLabel("Made by: SANGUINE 🤤🤤") end)
 
--- ===== Everything else, guarded; errors are shown on screen =====
+-- ===== Main Logic =====
 local function init()
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
@@ -74,7 +80,7 @@ local function init()
 	local pg = LocalPlayer:WaitForChild("PlayerGui")
 
 	local COUNTDOWN = 2.5             
-	local COOLDOWN = 24               -- Changed to 24 as requested
+	local COOLDOWN = 9.3              -- Changed to 9.3 seconds
 	local FIRST_JUMP_REMAINING = 0.24 
 	local JUMP_GAP = 0.40             
 
@@ -93,14 +99,14 @@ local function init()
 	local moveMode = false
 	local autoGetEnabled = false
 	local hasCd = false        
-	local jumpDisabled = false -- New flag to block jumping
+	local jumpDisabled = false 
 	local token = 0
 	local cdStart, cdEnd = 0, 0
 	local conns, hooked = {}, {}
 	local scanToken = 0
 	local gui, countLabel, cdLabel
 
-	-- ===== Block Jumps when Firefly is Active =====
+	-- ===== Block Jumps =====
 	UserInputService.JumpRequest:Connect(function()
 		if jumpDisabled then
 			local char = LocalPlayer.Character
@@ -111,13 +117,14 @@ local function init()
 		end
 	end)
 
-	-- ===== Auto Get Firefly Logic =====
+	-- ===== Auto Get Firefly =====
 	local function autoGetLoop()
 		task.spawn(function()
 			while autoGetEnabled and isCurrent() do
 				local char = LocalPlayer.Character
 				local bp = LocalPlayer:FindFirstChildOfClass("Backpack")
 				local hasTool = (char and char:FindFirstChild("Fireflies")) or (bp and bp:FindFirstChild("Fireflies"))
+				
 				if not hasTool then
 					pcall(function()
 						game:GetService("ReplicatedStorage").Remotes.Extras.ReplicateToy:InvokeServer("Fireflies")
@@ -136,7 +143,7 @@ local function init()
 		end
 	end
 
-	-- ===== Saved cooldown-window position =====
+	-- ===== Window Position =====
 	local savedPos = nil 
 
 	local function loadPos()
@@ -238,7 +245,7 @@ local function init()
 		local now = os.clock()
 		if now < cdEnd then return end
 
-		jumpDisabled = true -- Disable normal jumping
+		jumpDisabled = true -- Stop player from jumping
 
 		token = token + 1
 		local my = token
@@ -260,7 +267,10 @@ local function init()
 					j1 = true
 					fireJump()
 					task.delay(JUMP_GAP, function()
-						if enabled and isCurrent() and my == token then fireJump() end
+						if enabled and isCurrent() and my == token then 
+							fireJump() 
+							jumpDisabled = false -- Re-enable jumping right after the 2nd jump
+						end
 					end)
 				end
 
@@ -273,12 +283,11 @@ local function init()
 				if cdLabel then
 					if k > 0 then
 						cdLabel.Visible = true
-						-- Countdown from 24 to 0
 						cdLabel.Text = string.format("CD %.1f", k) 
 					end
 				end
 				if timeLeft <= 0 and k <= 0 then 
-					jumpDisabled = false -- Re-enable jumping when cooldown finishes
+					jumpDisabled = false -- Just in case
 					break 
 				end
 			end
