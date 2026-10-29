@@ -1,11 +1,11 @@
 # Wesz 🫡
 ### Roblox Scripter
 
-The name's Wesz — or Yaazkidd, or whatever tf you want
+name's Wesz — or Yaazkidd, or whatever tf you want
 
 I script for Roblox: universal cheats, game hacks, that kinda shit ykyk
 
-People ask how I make scripts so good. I don't do it alone. I work with a group called **The Fedora** — friends who code too much, break shit, fix it, repeat (🫩)
+People ask how I make scripts so good. I don't do it alone. I work with a group called da **The Fedora** — friends who code, break shit, fix it, repeat (🫩)
 
 ### Members
 
@@ -35,5 +35,3 @@ People ask how I make scripts so good. I don't do it alone. I work with a group 
 The repo has a bunch of open-sourced files go look around. Don't mind the AI-made ones I was too lazy to code those by hand.
 
 **Current project:** Fedora Cheats
-
-That's it. Thanks for stopping by.
