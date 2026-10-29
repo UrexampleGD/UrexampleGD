@@ -1,4 +1,4 @@
--- ODH TESTED
+-- Plugin in Tested
 
 local _s = odh_shared_plugins
 if not _s and getgenv then
@@ -9,7 +9,6 @@ if not _s and getgenv then
 end
 
 if not _s or type(_s.CreateTab) ~= "function" then
-	warn("[Firefly Timer] Load through the current Overdrive H plugin menu.")
 	return
 end
 
@@ -67,7 +66,10 @@ pcall(function()
 	end)
 end)
 
-pcall(function() _t2:AddLabel("Made by: SANGUINE 🤤🤤") end)
+pcall(function()
+	_t2:AddLabel("Made by: SANGUINE 🤤🤤")
+	_t2:AddLabel("Optimized By Da Foot Rocky CROCKODILE (Exirl)")
+end)
 
 local function _init()
 	local _plr = game:GetService("Players")
@@ -79,7 +81,7 @@ local function _init()
 	local _pg = _lp:WaitForChild("PlayerGui")
 
 	local _cd1 = 2.5             
-	local _cd2 = 14.1            -- Changed to 21.2
+	local _cd2 = 14.1            
 	local _fjr = 0.24 
 	local _jg = 0.40             
 
@@ -398,7 +400,6 @@ end
 local _ok3, _err3 = xpcall(_init, function(e) return tostring(e) end)
 if not _ok3 then
 	_msg("Init error: " .. tostring(_err3))
-	warn("[Firefly Timer] init failed: " .. tostring(_err3))
 else
 	_ui.ready = true
 	if _ui.d1 then _exec(_ui.apply, true) end
