@@ -79,7 +79,7 @@ local function _init()
 	local _pg = _lp:WaitForChild("PlayerGui")
 
 	local _cd1 = 2.5             
-	local _cd2 = 21.2            -- Changed to 21.2
+	local _cd2 = 14.1            -- Changed to 21.2
 	local _fjr = 0.24 
 	local _jg = 0.40             
 
